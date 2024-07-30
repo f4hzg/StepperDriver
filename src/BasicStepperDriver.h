@@ -201,6 +201,10 @@ public:
      */
     long nextAction(void);
     /*
+     * Non-blocking version of the same method
+     */
+    long nextAction_nonblocking(void);
+    /*
      * Optionally, call this to begin braking (and then stop) early
      * For constant speed, this is the same as stop()
      */

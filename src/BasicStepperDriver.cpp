@@ -335,6 +335,25 @@ long BasicStepperDriver::nextAction(void){
     return next_action_interval;
 }
 
+long BasicStepperDriver::nextAction_nonblocking(void){
+    if (steps_remaining > 0){
+        unsigned long now = micros();
+        long delay =  (last_action_end + next_action_interval) - now;
+        if (delay > MIN_YIELD_MICROS){
+            return delay;
+        }
+        else{
+            next_action_interval = nextAction();
+        }
+    }
+    else {
+        // end of move
+        last_action_end = 0;
+        next_action_interval = 0;
+    }
+    return next_action_interval;    
+}
+
 enum BasicStepperDriver::State BasicStepperDriver::getCurrentState(void){
     enum State state;
     if (steps_remaining <= 0){
