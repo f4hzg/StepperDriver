@@ -178,7 +178,8 @@ void BasicStepperDriver::startMove(long steps, long time){
         steps_to_cruise = 0;
         steps_to_brake = 0;
         step_pulse = cruise_step_pulse = STEP_PULSE(motor_steps, microsteps, rpm);
-        if (time > steps_remaining * step_pulse){
+        // cast to float to avoid overflows at very low frequency for many pulses
+        if ((float)(time) > (float)(steps_remaining) * (float)(step_pulse)){
             step_pulse = (float)time / steps_remaining;
         }
     }
