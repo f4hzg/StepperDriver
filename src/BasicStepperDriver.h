@@ -50,6 +50,18 @@ public:
         }
     }
 
+    /* DEBUG*/
+    unsigned long getNextActionInterval(){
+        return next_action_interval;
+    }
+    unsigned long getLastActionEnd(){
+        return last_action_end;
+    }
+    unsigned long getNow(){
+        unsigned long now = micros();
+        return now;
+    }
+
 private:
     // calculation remainder to be fed into successive steps to increase accuracy (Atmel DOC8017)
     long rest;

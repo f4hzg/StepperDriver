@@ -318,7 +318,7 @@ long BasicStepperDriver::nextAction(void){
          */
         digitalWrite(dir_pin, dir_state);
         digitalWrite(step_pin, HIGH);
-        unsigned m = micros();
+        unsigned long m = micros();
         unsigned long pulse = step_pulse; // save value because calcStepPulse() will overwrite it
         calcStepPulse();
         // We should pull HIGH for at least 1-2us (step_high_min)
@@ -339,20 +339,25 @@ long BasicStepperDriver::nextAction(void){
 long BasicStepperDriver::nextAction_nonblocking(void){
     if (steps_remaining > 0){
         unsigned long now = micros();
-        long delay =  (last_action_end + next_action_interval) - now;
-        if (delay > MIN_YIELD_MICROS){
-            return delay;
+        // needs some thinking to avoid overflows. 
+        // now should always be > last_action_end, so now-last_action_end is safe
+        // and gives the elapsed time since last action. If this is < next_action_interval - YIELD
+        // then we have at least YIELD to do something else, so we don't go to next action.
+        // in practice, to avoid overflows in next_action_interval - YIELD, it's better to
+        // compare now - last_action + YIELD. 
+        if ((now - last_action_end + MIN_YIELD_MICROS) < next_action_interval){
+            // in this case, now - last_action_end is the already elapsed time, which we remove from next_interval
+            // to get the delay until next move
+            return last_action_end + next_action_interval - now;
         }
         else{
             next_action_interval = nextAction();
+            return next_action_interval; 
         }
     }
-    else {
-        // end of move
-        last_action_end = 0;
-        next_action_interval = 0;
-    }
-    return next_action_interval;    
+    else{
+        return 0;
+    }   
 }
 
 enum BasicStepperDriver::State BasicStepperDriver::getCurrentState(void){
